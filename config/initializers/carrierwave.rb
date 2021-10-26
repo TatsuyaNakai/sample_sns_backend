@@ -1,21 +1,24 @@
-if Rails.env.development?
-  CarrierWave.configure do |config|
-      # バックエンド側のドメイン名を記入する。
-      config.asset_host = "http://localhost:3000"
-      config.storage = :file
-      config.cache_storage = :file
-  end
-end
+require 'carrierwave/storage/abstract'
+require 'carrierwave/storage/file'
+require 'carrierwave/storage/fog'
 
-if Rails.env.production?
-  CarrierWave.configure do |config|
+CarrierWave.configure do |config|
+  if Rails.env.production?
+    config.storage :fog
+    config.fog_provider = 'fog/aws'
+    config.fog_directory  = 'sns-portfolio' # バケット名
+    config.fog_public = false
     config.fog_credentials = {
       provider: 'AWS',
-      aws_access_key_id: 'AKIA2WWUPXGBCVDTNLF4',
-      aws_secret_access_key: "AKIA2WWUPXGBCVDTNLF4",
-      region: "ap-northeast-1",
+      aws_access_key_id: ENV['S3_ACCESS_KEY_ID'],
+      aws_secret_access_key: ENV['S3_SECRET_ACCESS_KEY'],
+      region: 'ap-northeast-1',
+      path_style: true
     }
-    config.fog_directory = 'sns-portfolio'
-    config.cache_storage = :fog
+  else
+    config.storage :file
+    config.asset_host = "http://localhost:3000"
+    config.cache_storage = :file
+    config.enable_processing = false if Rails.env.test?
   end
 end

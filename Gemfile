@@ -27,7 +27,8 @@ gem 'rack-cors'
 gem 'devise'
 gem 'devise_token_auth'
 gem 'carrierwave'
-gem 'fog'
+gem 'fog-aws'
+gem 'dotenv-rails'
 gem 'mini_magick'
 
 gem "foreman"
