@@ -12,14 +12,17 @@ class Api::V1::PostsController < ApplicationController
     # 全ユーザーの投稿を出力
     posts = Post.order(updated_at: :desc)
     posts_username = posts.joins(:user).pluck(:name)
+    posts_with_username = posts.map{ |r|
+      r.attributes.merge(image: r.image.url, name: r.user.name)
+    }
     # フォローしてる人たちの投稿と、名前を抽出する。
     following_posts = Post.where(user_id: [current_user.id, *current_user.following_ids])
-    followings_posts_username = following_posts.joins(:user).pluck(:name)
+    followings_posts_username = following_posts.map{ |r|
+      r.attributes.merge(image: r.image.url, name: r.user.name)
+    }
     render json: {
-      posts: posts,
-      posts_userName: posts_username,
-      following_posts: following_posts,
-      following_posts_username: followings_posts_username,
+      posts: posts_with_username,
+      following_posts: followings_posts_username,
     }, status: :ok
   end
 
@@ -27,15 +30,14 @@ class Api::V1::PostsController < ApplicationController
     # 単体のモデルの場合はテーブルの時のようにjoinsが使用できなかったので、別で設定した。
     post = Post.find(params[:id])
     # 少し冗長な気がする。
-    post_user = post.user
+    post_with_user = post.attributes.merge(image: post.image.url, avatar: post.user.image, name: post.user.name)
     # 特定のpostが持ってる（post_idがそれ）全てのcommentを格納
     comments = post.comments
     comments_with_columns = comments.map{ |r|
       r.attributes.merge(name: r.user.name, avatar: r.user.image)
     }
     render json: {
-      post: post,
-      post_user: post_user,
+      postWithUser: post_with_user,
       comments: comments_with_columns
     }, status: :ok
   end
